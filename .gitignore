@@ -1,0 +1,58 @@
+# --- Python 通用 ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# --- 虚拟环境 ---
+.venv/
+venv/
+ENV/
+env/
+.env_bak/
+
+# --- 敏感配置 ---
+.env
+.env.*
+!.env.example
+
+# --- IDE & OS ---
+.vscode/
+.idea/
+.DS_Store
+
+# --- 工具缓存 ---
+.mypy_cache/
+.ruff_cache/
+
+# --- Nautilus Trader 特有数据 ---
+# 避免上传巨大的历史数据文件
+catalog/
+# 避免上传运行时日志
+logs/
+# 避免上传本地缓存状态
+cache/
+# 避免上传策略检查点
+checkpoints/
+
+# --- 临时测试脚本 ---
+test_*.py
+scratch.py
