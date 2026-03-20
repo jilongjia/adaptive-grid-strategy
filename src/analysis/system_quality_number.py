@@ -3,34 +3,20 @@ import pandas as pd
 from nautilus_trader.analysis.statistic import PortfolioStatistic
 
 
-# ==============================================================================
-# 系统质量数 (SQN - System Quality Number)
-# ==============================================================================
 class SystemQualityNumber(PortfolioStatistic):
     """
-    System Quality Number (SQN)
-    Name ID: SQN_Jilong
+    System Quality Number (SQN) as defined by Van Tharp.
+    Formula: sqrt(N) * (mean return / std return).
 
-    公式: sqrt(N) * (Avg Return / Std Return)
-    来源: Van Tharp. 衡量系统“容易获利”的程度。
-
-    [网格交易建议标准]
-    - ⚠️ HFT 特别警示:
-      SQN 对交易次数(N)非常敏感。因为网格策略的 N 通常极大(成千上万)，
-      所以不能使用传统的低频策略标准(即 >3.0 优秀, >7.0 圣杯)。
-
-    - 针对 HFT/网格的修订标准 (扣费后):
-      * 及格线: > 5.0。
-        由于 N 很大，如果 SQN 还是很低，说明 (Avg/Std) 也就是单笔盈亏比率极差，
-        利润几乎全被手续费吃掉了。
-      * 优秀: > 10.0。
-        这代表策略在极高的交易频率下，依然保持了很强的稳定性。
-      * 极值: > 20.0 或更高。
-        在短期高频回测中常见，代表极度平滑的资金曲线。
-
-    - 核心解读:
-      SQN 本质上是 "交易频率" 和 "单笔锐度" 的乘积。
-      对于网格策略，如果 SQN 下降，通常意味着波动率(Std)变大，即网格被"破网"的风险在增加。
+    Benchmark for grid strategies:
+    - SQN scales with trade count (N), so traditional thresholds (> 3.0 good,
+      > 7.0 excellent) do not apply to high-frequency grid strategies.
+    - Revised thresholds for HFT/grid (post-fee):
+      * Acceptable: > 5.0
+      * Good:       > 10.0 — strong consistency maintained at high trade frequency.
+      * Excellent:  > 20.0 — common in short-term backtests with very smooth equity curves.
+    - A declining SQN typically signals increasing return volatility (std), which
+      often indicates the grid range is being breached.
     """
 
     @property
@@ -45,7 +31,7 @@ class SystemQualityNumber(PortfolioStatistic):
         avg_ret = returns.mean()
         std_ret = returns.std()
 
-        # 防御标准差为 0 (通常发生在只有 1 笔交易或所有交易收益完全相同时)
+        # Guard against zero std (single trade or all returns identical)
         if std_ret == 0:
             return 0.0
 

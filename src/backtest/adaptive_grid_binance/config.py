@@ -3,20 +3,17 @@
 import pandas as pd
 
 # ==============================================================================
-# 1. 交易标的与时间 (Trading Context)
+# 1. Trading Context
 # ==============================================================================
-# 仅指定 Symbol，不包含 Venue
 INSTRUMENT_SYMBOL = "DOGEUSDT-PERP"
 
-# 初始资金 (USDT)
-INITIAL_CAPITAL = 1_000.0
+INITIAL_CAPITAL = 1_000.0  # USDT
 
-# 回测时间段
 BACKTEST_START = pd.Timestamp("2024-03-15 00:00:00", tz="UTC")
 BACKTEST_END = pd.Timestamp("2024-03-30 23:59:59", tz="UTC")
 
 # ==============================================================================
-# 2. 策略参数 (Strategy Parameters)
+# 2. Strategy Parameters
 # ==============================================================================
 STRATEGY_CONFIG = {
     # --- Basic ---
@@ -40,7 +37,7 @@ STRATEGY_CONFIG = {
     "rsi_lookback_window": 240,
     "rsi_oversold_threshold": 25.0,
     "rsi_overbought_threshold": 75.0,
-    # --- Anchor Management---
+    # --- Anchor Management ---
     "anchor_decay_factor": 0.001,
     # --- Intervals ---
     "volatility_sample_interval_sec": 1.0,

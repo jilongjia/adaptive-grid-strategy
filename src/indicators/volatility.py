@@ -5,8 +5,8 @@ import math
 
 class Volatility:
     """
-    基于 EWMA 的在线波动率计算。
-    使用 None 作为未初始化状态，内置预热倒计时。
+    Online volatility estimator based on EWMA of squared log returns.
+    Uses None as the uninitialized sentinel and an internal warmup countdown.
     """
 
     def __init__(self, alpha: float):
@@ -25,11 +25,11 @@ class Volatility:
         self._warmup_countdown: int = math.ceil(1.0 / alpha)
 
     def update(self, price: float) -> None:
-        # 1. 过滤无效价格
+        # 1. Reject invalid prices
         if price <= 0:
             return
 
-        # 2. [第一帧] 仅记录价格
+        # 2. First tick: record price only, no return to compute
         if self.last_price is None:
             self.last_price = price
             return
@@ -37,7 +37,7 @@ class Volatility:
         log_ret = math.log(price / self.last_price)
         squared_ret = log_ret**2
 
-        # 4. 更新方差
+        # 3. Update EWMA variance
         if self.variance is None:
             self.variance = squared_ret
         else:
@@ -45,11 +45,11 @@ class Volatility:
                 (1.0 - self.alpha) * self.variance
             )
 
-        # 5. 更新波动率数值
+        # 4. Derive volatility from variance
         self.value = math.sqrt(self.variance)
         self.last_price = price
 
-        # 6. 维护预热倒计时
+        # 5. Advance warmup countdown
         if not self.initialized:
             self._warmup_countdown -= 1
             if self._warmup_countdown <= 0:

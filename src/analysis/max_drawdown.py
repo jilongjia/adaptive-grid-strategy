@@ -4,21 +4,16 @@ from nautilus_trader.analysis.statistic import PortfolioStatistic
 
 class MaxDrawdown(PortfolioStatistic):
     """
-    Max Drawdown (最大回撤)
-    Name ID: Max_Drawdown_Jilong
+    Maximum drawdown of the equity curve, defined as the largest peak-to-trough
+    decline relative to the running high watermark.
+    Returns a negative float (e.g. -0.15 represents a 15% drawdown).
 
-    公式: (当前净值 - 历史最高净值) / 历史最高净值
-    返回值: 负数浮点型 (例如 -0.15 代表回撤 15%)
-
-    [网格交易建议标准]
-    - 核心逻辑: 衡量账户资金承受的最大下行风险。
-    - 典型范围:
-      * 优秀 (Safe): > -0.10 (即回撤幅度小于 10%)。稳健型网格应以此为目标。
-      * 正常 (Aggressive): -0.10 ~ -0.25。对于带杠杆的激进网格，这是常见区间。
-    - 警示线:
-      * 如果回撤幅度超过 -0.30 (30%)，对于网格策略属于"红色警报"。
-        原因: 网格策略靠高频微利积累收益，填坑速度慢。深幅回撤通常意味着价格突破了网格区间(破网)，
-        不仅资金受损，往往还伴随着严重的套牢仓位，策略失效的概率极高。
+    Benchmark for grid strategies:
+    - Safe:       > -0.10  — target range for conservative grid configurations.
+    - Aggressive: -0.10 to -0.25 — acceptable for leveraged grids.
+    - Warning:    < -0.30  — grid strategies recover slowly via high-frequency
+      micro-profits; a drawdown of this magnitude typically indicates price has
+      broken out of the grid range, with a high probability of strategy failure.
     """
 
     def __init__(self, initial_capital: float):
@@ -35,16 +30,15 @@ class MaxDrawdown(PortfolioStatistic):
         if realized_pnls is None or realized_pnls.empty:
             return 0.0
 
-        # 1. 构建资金曲线 (Equity Curve)
+        # 1. Build equity curve from cumulative PnL
         cumsum_pnl = realized_pnls.cumsum()
         equity_curve = self._initial_capital + cumsum_pnl
 
-        # 2. 计算历史最高净值 (High Watermark)
-        # clip 确保了基准线永远不会低于初始本金 (处理开局即亏损的情况)
+        # 2. Compute running peak; clipped to initial capital to handle early losses
         running_peak = equity_curve.cummax().clip(lower=self._initial_capital)
 
-        # 3. 计算回撤百分比
+        # 3. Compute percentage drawdown at each point
         drawdown_pct = (equity_curve / running_peak) - 1.0
 
-        # 4. 返回最大回撤 (最小的负数值)
+        # 4. Return the maximum drawdown (most negative value)
         return drawdown_pct.min()
